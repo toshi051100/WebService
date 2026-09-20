@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>かんたん投稿シミュレーター｜処理・保存・共有を体験しよう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<header class="app-header">
+  <div class="app-header__inner">
+    <p class="app-header__badge">情報Ⅰ ｜ ネットワークの授業</p>
+    <h1 class="app-header__title">📮 かんたん投稿シミュレーター</h1>
+    <p class="app-header__subtitle">ボタン1つで投稿できるSNS。その裏側で起きている「処理・保存・共有」をのぞいてみよう。</p>
+  </div>
+</header>
+
+<main class="page">
+
+  <!-- ================= 投稿作成ビュー ================= -->
+  <section id="composeView" class="view">
+
+    <p class="howto">① 画像とコメントを選ぶ → ② 公開範囲を選ぶ → ③「投稿する」を押して、裏側の動きを観察しよう。</p>
+
+    <form id="postForm" class="composer" novalidate>
+
+      <div class="field">
+        <span class="field__label">画像を選ぶ</span>
+        <div class="image-picker" id="imagePicker" role="group" aria-label="画像を選ぶ">
+          <button type="button" class="image-picker__item" data-emoji="📷" aria-pressed="false">
+            <span class="image-picker__emoji">📷</span><span class="image-picker__name">カメラ</span>
+          </button>
+          <button type="button" class="image-picker__item" data-emoji="🌸" aria-pressed="false">
+            <span class="image-picker__emoji">🌸</span><span class="image-picker__name">花</span>
+          </button>
+          <button type="button" class="image-picker__item" data-emoji="🍜" aria-pressed="false">
+            <span class="image-picker__emoji">🍜</span><span class="image-picker__name">ごはん</span>
+          </button>
+          <button type="button" class="image-picker__item" data-emoji="🐶" aria-pressed="false">
+            <span class="image-picker__emoji">🐶</span><span class="image-picker__name">いぬ</span>
+          </button>
+          <button type="button" class="image-picker__item" data-emoji="🌇" aria-pressed="false">
+            <span class="image-picker__emoji">🌇</span><span class="image-picker__name">夕焼け</span>
+          </button>
+          <button type="button" class="image-picker__item" data-emoji="🎨" aria-pressed="false">
+            <span class="image-picker__emoji">🎨</span><span class="image-picker__name">アート</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="commentInput">コメント（20文字まで）</label>
+        <input type="text" id="commentInput" class="text-input" maxlength="40" placeholder="今日の出来事を書いてみよう">
+      </div>
+
+      <div class="field">
+        <span class="field__label">公開範囲</span>
+        <div class="visibility-picker" role="radiogroup" aria-label="公開範囲">
+          <label class="visibility-picker__item">
+            <input type="radio" name="visibility" value="private" checked>
+            <span class="visibility-picker__icon">🔒</span>
+            <span class="visibility-picker__text">自分だけ</span>
+          </label>
+          <label class="visibility-picker__item">
+            <input type="radio" name="visibility" value="friend">
+            <span class="visibility-picker__icon">🔗</span>
+            <span class="visibility-picker__text">友達にリンクで共有</span>
+          </label>
+          <label class="visibility-picker__item">
+            <input type="radio" name="visibility" value="class">
+            <span class="visibility-picker__icon">📢</span>
+            <span class="visibility-picker__text">クラス全体に公開</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="post-btn">投稿する</button>
+    </form>
+
+    <!-- 3ステップトラッカー -->
+    <div class="step-tracker" id="stepTracker" aria-hidden="true">
+      <div class="step-tracker__item" data-step="process">
+        <span class="step-tracker__circle">1</span>
+        <span class="step-tracker__label">処理</span>
+      </div>
+      <div class="step-tracker__line" data-line="1"></div>
+      <div class="step-tracker__item" data-step="save">
+        <span class="step-tracker__circle">2</span>
+        <span class="step-tracker__label">保存</span>
+      </div>
+      <div class="step-tracker__line" data-line="2"></div>
+      <div class="step-tracker__item" data-step="share">
+        <span class="step-tracker__circle">3</span>
+        <span class="step-tracker__label">共有</span>
+      </div>
+    </div>
+
+    <!-- 裏側ログパネル（端末っぽい暗い配色） -->
+    <div class="console" id="console" hidden>
+      <div class="console__bar">
+        <span class="console__dot"></span><span class="console__dot"></span><span class="console__dot"></span>
+        <span class="console__title">裏側の処理ログ</span>
+      </div>
+      <div class="console__body" id="consoleBody" aria-live="polite"></div>
+    </div>
+
+    <!-- 結果パネル（リンク／エラー表示） -->
+    <div class="result" id="result" hidden></div>
+
+    <!-- 保存されている投稿一覧 -->
+    <section class="my-posts">
+      <div class="my-posts__head">
+        <h2>📱 この端末に保存されている投稿</h2>
+        <button type="button" id="resetBtn" class="reset-btn">ぜんぶ消す</button>
+      </div>
+      <p class="my-posts__hint">投稿は「保存」の処理によって、この端末（ブラウザ）の中に残ります。リロードしても消えません。</p>
+      <div class="post-list" id="postList"></div>
+    </section>
+
+  </section>
+
+  <!-- ================= 共有リンクから開いた時のビュー ================= -->
+  <section id="receivedView" class="view" hidden>
+    <div class="received-card">
+      <p class="received-card__badge">🎉 共有リンクから届きました</p>
+      <div class="received-card__post" id="receivedPost"></div>
+    </div>
+
+    <div class="console console--static">
+      <div class="console__bar">
+        <span class="console__dot"></span><span class="console__dot"></span><span class="console__dot"></span>
+        <span class="console__title">このURLに直接入っていたデータ</span>
+      </div>
+      <pre class="console__body console__body--pre" id="receivedRaw"></pre>
+    </div>
+
+    <p class="received-note">
+      サーバーが無いこのアプリでも投稿が表示できたのは、<strong>データそのものがURL（リンク）の中に埋め込まれていた</strong>からです。
+      裏を返せば、このリンクを知っている人なら誰でも中身を見られる、ということでもあります。もし個人情報を含む内容だったら…？
+    </p>
+
+    <button type="button" id="backToComposeBtn" class="post-btn post-btn--ghost">自分でも投稿を作ってみる</button>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>このアプリは GitHub Pages 上だけで動作しています（サーバーなし・データベースなし）。</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
